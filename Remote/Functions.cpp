@@ -114,3 +114,9 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultSettings *ptr) {
     }
   }
 }
+
+
+void resetBuffer(uint8_t *buf, uin8_t bufSize) {
+
+  
+}

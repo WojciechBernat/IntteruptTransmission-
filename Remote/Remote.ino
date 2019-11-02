@@ -27,9 +27,9 @@ uint8_t RxAddresses[PIPE_ADDRESS_SIZE] = {0x0B, 0x0B, 0x0B, 0x0B, 0x02};  //RX p
 RF24 remote(7, 8);
 
 void setup() {
-  uartInit(115200,  SERIAL_8E1);
-
-
+  uartInit(UART_SPEED_115 ,  SERIAL_8E1);
+  
+  
 }
 
 void loop() {
