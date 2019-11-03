@@ -8,26 +8,32 @@
 #include <printf.h>   //Warning! Include to use printDetails()
 
 /* Directives and Macros */
-#define PIPE_ADDRESS_SIZE  5
-#define BUFFER_SIZE        4
+#define PIPE_ADDRESS_SIZE  5    //Size of pipeline address array
+#define BUFFER_SIZE        4    //Size of transmission buffers 
 
+/* Pins definition */
+#define TX_PIN_LED        6            //Pins numbers
+#define RX_PIN_LED        5
+#define CE_PIN            7
+#define CSN_PIN           8
+
+/* UART speed definition */
 #define UART_SPEED_96    9600
 #define UART_SPEED_115   115200
 
-#define TX_PIN_LED 6            //Pins numbers
-#define RX_PIN_LED 5
-#define CE_PIN    7
-#define CSN_PIN   8
 
 /* Variables */
 String txName = "TX Buffer";
 String rxName = "RX Buffer";
-/* Arrays */
-uint8_t TxBuffer[BUFFER_SIZE];
-uint8_t RxBuffer[BUFFER_SIZE];
 
+
+/* Pipeline addresses */
 uint8_t TxAddresses[PIPE_ADDRESS_SIZE] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};  //TX pipeline address
 uint8_t RxAddresses[PIPE_ADDRESS_SIZE] = {0x0B, 0x0B, 0x0B, 0x0B, 0x02};  //RX pipeline address
+
+/* Transmission buffers */
+uint8_t TxBuffer[BUFFER_SIZE];
+uint8_t RxBuffer[BUFFER_SIZE];
 
 RF24 Remote(CE_PIN, CSN_PIN);
 
@@ -54,8 +60,18 @@ void setup() {
 
   /* Tx and Rx Buffers reset */
   printBufferReset(TxBuffer, sizeof(TxBuffer), txName);
-  Serial.print("\n " + String(sizeof(TxBuffer)));
+  printBufferReset(TxBuffer, sizeof(TxBuffer), rxName);
+
+  /* ADC intterput init */
+  adcInterruptSetup();
 }
 
 void loop() {
+  if(ToTxFlag == true) {
+    bufferCopyMap(AdcVal, TxBuffer, 3);
+//    Serial.print("\n TxBuffer 0 "+ String(TxBuffer[0]));
+//    Serial.print("\n TxBuffer 1 "+ String(TxBuffer[1]));
+//    Serial.print("\n TxBuffer 2 "+ String(TxBuffer[2]));
+    Remote.write(TxBuffer, BUFFER_SIZE);
+  }
 }

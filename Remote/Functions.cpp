@@ -1,14 +1,37 @@
 /* Functions bodies */
 
 /* Libraries */
-#include <Arduino.h>
 #include "Functions.h"
+
+#include <Arduino.h>
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
 
+#define BUFFER_SIZE 4
 
-struct defaultSettings {
+uint8_t adcPinX = 0x0;
+uint8_t adcPinY = 0x01;
+uint8_t adcPinS = 0x02;
+
+bool ToTxFlag = false;
+bool *pToTxFlag = &ToTxFlag;
+uint16_t AdcVal[3];
+uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
+
+//struct nRF24Settings {
+//  rf24_pa_dbm_e PowerLevel;
+//  rf24_datarate_e DataRete;
+//  rf24_crclength_e CRCLength;
+//  uint8_t Channel;
+//  uint8_t retriesDelay;
+//  uint8_t retriesCount;
+//  bool    autoAckFlag;
+//};
+
+
+
+struct defaultUartSettings {
   bool speedFlag;
   bool formatFlag;
   uint32_t uartSpeedDef;
@@ -16,8 +39,8 @@ struct defaultSettings {
 } ;
 
 void uartInit(uint32_t Speed, uint8_t Format) {
-  struct defaultSettings defSet = {false, false, 115200, 38};
-  struct defaultSettings *defSetPtr = &defSet;
+  struct defaultUartSettings defSet = {false, false, 115200, 38};
+  struct defaultUartSettings *defSetPtr = &defSet;
 
   Speed = uartSpeedCheck(Speed, defSetPtr);
   Format = uartFormatCheck(Format, defSetPtr);
@@ -42,7 +65,7 @@ void uartInit(uint32_t Speed, uint8_t Format) {
   }
 }
 
-uint32_t uartSpeedCheck(uint32_t Speed, struct defaultSettings *ptr) {
+uint32_t uartSpeedCheck(uint32_t Speed, struct defaultUartSettings *ptr) {
   switch (Speed) {
     case 2500:
       ptr -> speedFlag = true;
@@ -90,7 +113,7 @@ uint32_t uartSpeedCheck(uint32_t Speed, struct defaultSettings *ptr) {
 
 }
 
-uint8_t uartFormatCheck(uint8_t Format, struct defaultSettings *ptr) {
+uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
   if (Format % 2) {
     //    Serial.print("Incorrect frame format\n Set deafult: " + String(SERIAL_8E1));
     ptr -> formatFlag = false;
@@ -115,6 +138,11 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultSettings *ptr) {
   }
 }
 
+void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize) {
+  for(int i = 0; i < bufSize; i ++) {
+    buf[i] = map(source[i], 0 , 1023, 0, 255);
+  }
+}
 
 void resetBuffer(uint8_t *buf, uint8_t bufSize) {
   for (int i = 0; i < bufSize; i++) {
@@ -128,7 +156,44 @@ void printBufferReset(uint8_t *buf, uint8_t bufSize, String bufName) {
     bufSize = BUFFER_SIZE;
   }
   else {
-      resetBuffer(buf, bufSize);
+    resetBuffer(buf, bufSize);
   }
   Serial.print("\nBuffer " + bufName + " reset correct");
+}
+
+
+void adcInterruptSetup(void) {
+  ADMUX &= B11011111;     //ADMUX reset
+  ADMUX |= B01000000;     //Vref choose
+  ADMUX &= B11110000;     //Reset lower bits
+  ADMUX |= adcPinX;       //Set ADC MUX channel - CH0
+
+  ADCSRA |= B10000000;    //ADC enable
+  ADCSRA |= B00100000;    //Enable auto triggering of ADC
+
+  ADCSRB &= B01000000;    //Set free running mode
+
+  ADCSRA |= bit (ADPS0) | bit (ADPS1) | bit (ADPS2);  //set prescaler 128
+  ADCSRA |= B0001000;     //Enable ADC interrupt
+
+  sei();      //set global interrupts flag
+
+  ADCSRA |= B01000000; //start conversion
+}
+
+ISR(ADC_vect) {
+  if ((ADMUX & 0x07) == 0x00 ) {
+    *pADC[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
+    ADMUX |= adcPinY;
+  }
+  else if ((ADMUX & 0x07) == 0x01) {
+    *pADC[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
+    ADMUX |= adcPinS;
+  }
+  else {
+    *pADC[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
+    ADMUX |= adcPinX;
+    ToTxFlag = true;
+  }
+
 }
