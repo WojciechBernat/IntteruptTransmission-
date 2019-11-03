@@ -3,10 +3,6 @@
 /* Libraries */
 #include "Functions.h"
 
-#include <Arduino.h>
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
 
 #define BUFFER_SIZE 4
 

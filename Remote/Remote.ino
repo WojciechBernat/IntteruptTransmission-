@@ -2,30 +2,11 @@
 
 /* Libraries */
 #include "Functions.h"
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
 #include <printf.h>   //Warning! Include to use printDetails()
-
-/* Directives and Macros */
-#define PIPE_ADDRESS_SIZE  5    //Size of pipeline address array
-#define BUFFER_SIZE        4    //Size of transmission buffers 
-
-/* Pins definition */
-#define TX_PIN_LED        6            //Pins numbers
-#define RX_PIN_LED        5
-#define CE_PIN            7
-#define CSN_PIN           8
-
-/* UART speed definition */
-#define UART_SPEED_96    9600
-#define UART_SPEED_115   115200
-
 
 /* Variables */
 String txName = "TX Buffer";
 String rxName = "RX Buffer";
-
 
 /* Pipeline addresses */
 uint8_t TxAddresses[PIPE_ADDRESS_SIZE] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};  //TX pipeline address
