@@ -58,5 +58,8 @@ void loop() {
       Slave.read(RxBuffer, RECEIVE_DATA_SIZE);
     }
   }
+  else {
+    Serial.print("\nRx Buffer[0] " + String(RxBuffer[0]));
+  }
 
 }
