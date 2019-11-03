@@ -3,33 +3,20 @@
 /* Libraries */
 #include "Functions.h"
 
-#include <Arduino.h>
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
 
-#define BUFFER_SIZE 4
+//uint8_t adcPinX = 0x00;    //TX
+//uint8_t adcPinY = 0x01;
+//uint8_t adcPinS = 0x02;
 
-uint8_t adcPinX = 0x0;
-uint8_t adcPinY = 0x01;
-uint8_t adcPinS = 0x02;
+uint8_t adcPin = 0x00;      //RX
 
-bool ToTxFlag = false;
-bool *pToTxFlag = &ToTxFlag;
-uint16_t AdcVal[3];
-uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
+//bool ToTxFlag = false;        //TX
+//bool *pToTxFlag = &ToTxFlag;
+//uint16_t AdcVal[3];
+//uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
-//struct nRF24Settings {
-//  rf24_pa_dbm_e PowerLevel;
-//  rf24_datarate_e DataRete;
-//  rf24_crclength_e CRCLength;
-//  uint8_t Channel;
-//  uint8_t retriesDelay;
-//  uint8_t retriesCount;
-//  bool    autoAckFlag;
-//};
-
-
+uint16_t volatile AdcVal = 0;    //RX
+uint16_t volatile *pAdcVal = &AdcVal;
 
 struct defaultUartSettings {
   bool speedFlag;
@@ -139,7 +126,7 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
 }
 
 void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize) {
-  for(int i = 0; i < bufSize; i ++) {
+  for (int i = 0; i < bufSize; i ++) {
     buf[i] = map(source[i], 0 , 1023, 0, 255);
   }
 }
@@ -166,7 +153,8 @@ void adcInterruptSetup(void) {
   ADMUX &= B11011111;     //ADMUX reset
   ADMUX |= B01000000;     //Vref choose
   ADMUX &= B11110000;     //Reset lower bits
-  ADMUX |= adcPinX;       //Set ADC MUX channel - CH0
+  //  ADMUX |= adcPinX;       //Set ADC MUX channel - CH0   //TX
+  ADMUX |= adcPin;       //Set ADC MUX channel - CH0    //RX
 
   ADCSRA |= B10000000;    //ADC enable
   ADCSRA |= B00100000;    //Enable auto triggering of ADC
@@ -181,19 +169,11 @@ void adcInterruptSetup(void) {
   ADCSRA |= B01000000; //start conversion
 }
 
-ISR(ADC_vect) {
-  if ((ADMUX & 0x07) == 0x00 ) {
-    *pADC[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    ADMUX |= adcPinY;
-  }
-  else if ((ADMUX & 0x07) == 0x01) {
-    *pADC[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    ADMUX |= adcPinS;
-  }
-  else {
-    *pADC[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    ADMUX |= adcPinX;
-    ToTxFlag = true;
-  }
+void rxISRFunction()  {
+  AdcVal = map((ADCL | (ADCH << 8)), 0, 1023, 0, 255);
+  TxBuffer[0] = AdcVal;
+}
 
+ISR(ADC_vect) {
+  rxISRFunction();
 }
