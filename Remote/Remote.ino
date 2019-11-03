@@ -52,7 +52,7 @@ void setup() {
 void loop() {
   if(ToTxFlag == true) {
     bufferCopyMap(AdcVal, TxBuffer, 3);
-    Remote.write(TxBuffer, BUFFER_SIZE);
+    Remote.write(TxBuffer, TRANSMIT_DATA_SIZE);
     ToTxFlag = false;
   }
   else {

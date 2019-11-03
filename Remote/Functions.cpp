@@ -12,8 +12,8 @@ uint8_t adcPinS = 0x02;
 
 bool ToTxFlag = false;
 bool *pToTxFlag = &ToTxFlag;
-uint16_t AdcVal[3];
-uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
+uint16_t volatile AdcVal[3];
+uint16_t volatile *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
 
 
@@ -124,7 +124,7 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
   }
 }
 
-void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize) {
+void bufferCopyMap(volatile uint16_t *source, uint8_t *buf, uint8_t bufSize) {
   for (int i = 0; i < bufSize; i ++) {
     buf[i] = map(source[i], 0 , 1023, 0, 255);
   }

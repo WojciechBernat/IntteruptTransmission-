@@ -8,8 +8,10 @@
 #include <SPI.h>
 
 /* Directives and Macros */
-#define PIPE_ADDRESS_SIZE  5    //Size of pipeline address array
-#define BUFFER_SIZE        4    //Size of transmission buffers 
+#define BUFFER_SIZE           4    //Size of transmission buffers 
+#define PIPE_ADDRESS_SIZE     5    //Size of pipeline address array
+#define TRANSMIT_DATA_SIZE    4    //Size of data send to RX
+#define RX_ACK_PAYLOAD_SIZE   3    //Size of data which can be receive from RX while ACK with payload
 
 /* Pins definition */
 #define TX_PIN_LED        6            //Pins numbers
@@ -24,8 +26,8 @@
 /* Extern variables */
 extern bool ToTxFlag;
 extern bool *pToTxFlag;
-extern uint16_t AdcVal[3];
-extern uint16_t *pADC[3];
+extern volatile uint16_t AdcVal[3];
+extern volatile uint16_t *pADC[3];
 
 extern String txName;
 extern String rxName;
@@ -46,7 +48,7 @@ uint8_t  uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr);
 
 void printBufferReset(uint8_t *buf, uint8_t bufSize, String bufName);
 void resetBuffer(uint8_t *buf, uint8_t bufSize);
-void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize);
+void bufferCopyMap(volatile uint16_t *source, uint8_t *buf, uint8_t bufSize);
 
 void adcInterruptSetup(void);
 void txISRFunction(void);
