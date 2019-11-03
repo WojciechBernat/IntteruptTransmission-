@@ -49,3 +49,4 @@ void resetBuffer(uint8_t *buf, uint8_t bufSize);
 void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize);
 
 void adcInterruptSetup(void);
+void txISRFunction(void);

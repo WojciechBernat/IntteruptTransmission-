@@ -45,14 +45,19 @@ void setup() {
 
   /* ADC intterput init */
   adcInterruptSetup();
+
+  Remote.stopListening();   //TX
 }
 
 void loop() {
   if(ToTxFlag == true) {
     bufferCopyMap(AdcVal, TxBuffer, 3);
-//    Serial.print("\n TxBuffer 0 "+ String(TxBuffer[0]));
-//    Serial.print("\n TxBuffer 1 "+ String(TxBuffer[1]));
-//    Serial.print("\n TxBuffer 2 "+ String(TxBuffer[2]));
     Remote.write(TxBuffer, BUFFER_SIZE);
+    ToTxFlag = false;
+  }
+  else {
+    Serial.println("\nTX Buffer[0] data: " + String(TxBuffer[0]));
+    Serial.println("\nTX Buffer[1] data: " + String(TxBuffer[1]));
+    Serial.println("\nTX Buffer[2] data: " + String(TxBuffer[2]));
   }
 }

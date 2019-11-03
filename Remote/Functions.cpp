@@ -15,16 +15,6 @@ bool *pToTxFlag = &ToTxFlag;
 uint16_t AdcVal[3];
 uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
-//struct nRF24Settings {
-//  rf24_pa_dbm_e PowerLevel;
-//  rf24_datarate_e DataRete;
-//  rf24_crclength_e CRCLength;
-//  uint8_t Channel;
-//  uint8_t retriesDelay;
-//  uint8_t retriesCount;
-//  bool    autoAckFlag;
-//};
-
 
 
 struct defaultUartSettings {
@@ -135,7 +125,7 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
 }
 
 void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize) {
-  for(int i = 0; i < bufSize; i ++) {
+  for (int i = 0; i < bufSize; i ++) {
     buf[i] = map(source[i], 0 , 1023, 0, 255);
   }
 }
@@ -177,8 +167,8 @@ void adcInterruptSetup(void) {
   ADCSRA |= B01000000; //start conversion
 }
 
-ISR(ADC_vect) {
-  if ((ADMUX & 0x07) == 0x00 ) {
+void txISRFunction(void) {
+    if ((ADMUX & 0x07) == 0x00 ) {
     *pADC[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
     ADMUX |= adcPinY;
   }
@@ -191,5 +181,19 @@ ISR(ADC_vect) {
     ADMUX |= adcPinX;
     ToTxFlag = true;
   }
-
 }
+
+ISR(ADC_vect) {
+  txISRFunction();
+}
+
+
+//struct nRF24Settings {
+//  rf24_pa_dbm_e PowerLevel;
+//  rf24_datarate_e DataRete;
+//  rf24_crclength_e CRCLength;
+//  uint8_t Channel;
+//  uint8_t retriesDelay;
+//  uint8_t retriesCount;
+//  bool    autoAckFlag;
+//};
