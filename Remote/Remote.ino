@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
+#include <printf.h>   //Warning! Include to use printDetails()
 
 /* Directives and Macros */
 #define PIPE_ADDRESS_SIZE  5
@@ -15,8 +16,12 @@
 
 #define TX_PIN_LED 6            //Pins numbers
 #define RX_PIN_LED 5
+#define CE_PIN    7
+#define CSN_PIN   8
 
 /* Variables */
+String txName = "TX Buffer";
+String rxName = "RX Buffer";
 /* Arrays */
 uint8_t TxBuffer[BUFFER_SIZE];
 uint8_t RxBuffer[BUFFER_SIZE];
@@ -24,14 +29,33 @@ uint8_t RxBuffer[BUFFER_SIZE];
 uint8_t TxAddresses[PIPE_ADDRESS_SIZE] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};  //TX pipeline address
 uint8_t RxAddresses[PIPE_ADDRESS_SIZE] = {0x0B, 0x0B, 0x0B, 0x0B, 0x02};  //RX pipeline address
 
-RF24 remote(7, 8);
+RF24 Remote(CE_PIN, CSN_PIN);
 
 void setup() {
+  /* UART init */
   uartInit(UART_SPEED_115 ,  SERIAL_8E1);
+  printf_begin();                                     //Added to use printDetails();
+
+  /* nRF24L01+ init */
+  Remote.begin();
+  Remote.setPALevel(RF24_PA_MIN);
+  Remote.setDataRate(RF24_250KBPS);
+  Remote.setChannel(0x64);             //CH100
   
+  Remote.setRetries(1, 4);   
+  Remote.setAutoAck(true);     
+  Remote.setCRCLength(RF24_CRC_8);
+  Remote.enableAckPayload();
   
+  Remote.openWritingPipe(TxAddresses);
+  Remote.openReadingPipe(0, RxAddresses);
+
+  Remote.printDetails();
+
+  /* Tx and Rx Buffers reset */
+  printBufferReset(TxBuffer, sizeof(TxBuffer), txName);
+  Serial.print("\n " + String(sizeof(TxBuffer)));
 }
 
 void loop() {
-
 }

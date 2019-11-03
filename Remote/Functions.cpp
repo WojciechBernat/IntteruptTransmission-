@@ -32,7 +32,7 @@ void uartInit(uint32_t Speed, uint8_t Format) {
     Serial.println("\nInorrect speed value \nSet default speed: " + String(Speed));
     defSetPtr -> speedFlag = true;
   }
-  
+
   if (defSetPtr -> formatFlag) {
     Serial.println("\nCorrect format \nSet frame format: " + String(Format));
   }
@@ -116,7 +116,19 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultSettings *ptr) {
 }
 
 
-void resetBuffer(uint8_t *buf, uin8_t bufSize) {
+void resetBuffer(uint8_t *buf, uint8_t bufSize) {
+  for (int i = 0; i < bufSize; i++) {
+    buf[i] = 0;
+  }
+}
 
-  
+void printBufferReset(uint8_t *buf, uint8_t bufSize, String bufName) {
+  if (bufSize <= 0) {
+    Serial.print("\nBuffer size error");
+    bufSize = BUFFER_SIZE;
+  }
+  else {
+      resetBuffer(buf, bufSize);
+  }
+  Serial.print("\nBuffer " + bufName + " reset correct");
 }
