@@ -56,6 +56,8 @@ void loop() {
     ToTxFlag = false;
   }
   else {
+    delay(100);
+
     Serial.println("\nTX Buffer[0] data: " + String(TxBuffer[0]));
     Serial.println("\nTX Buffer[1] data: " + String(TxBuffer[1]));
     Serial.println("\nTX Buffer[2] data: " + String(TxBuffer[2]));

@@ -6,13 +6,13 @@
 
 #define BUFFER_SIZE 4
 
-uint8_t adcPinX = 0;
-uint8_t adcPinY = 1;
-uint8_t adcPinS = 2;
+uint8_t adcPinX = 0x0;
+uint8_t adcPinY = 0x01;
+uint8_t adcPinS = 0x02;
 
 bool ToTxFlag = false;
 bool *pToTxFlag = &ToTxFlag;
-uint16_t volatile AdcVal[3] = {0, 0 , 0};
+uint16_t volatile AdcVal[3];
 uint16_t volatile *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
 
@@ -106,7 +106,7 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
     return SERIAL_8E1;
   }
   else {
-    for (int i = 0; i < 62; i += 2) {
+    for (int i = 0; i <= 62; i += 2) {
       if (i == 16) {
         i = 32;
       }
@@ -150,17 +150,17 @@ void printBufferReset(uint8_t *buf, uint8_t bufSize, String bufName) {
 
 void adcInterruptSetup(void) {
   ADMUX &= B11011111;     //ADMUX reset
-  ADMUX |= B11000000;     //Vref choose
+  ADMUX |= B01000000;     //Vref choose
   ADMUX &= B11110000;     //Reset lower bits
-  ADMUX |= 8;       //Set ADC MUX channel - CH0
-    
-  ADCSRA |= B10000000;    //ADC enable
-  ADCSRA |= bit (ADPS0) | bit (ADPS1) | bit (ADPS2);  //set prescaler 128 
-  ADCSRA |= B00100000;    //Enable auto triggering of ADC
-  
-  ADCSRB &= B11111000;    //Set free running mode
+  ADMUX |= adcPinX;       //Set ADC MUX channel - CH0
 
-  ADCSRA |= B00001000;     //Enable ADC interrupt
+  ADCSRA |= B10000000;    //ADC enable
+  ADCSRA |= B00100000;    //Enable auto triggering of ADC
+
+  ADCSRB &= B01000000;    //Set free running mode
+
+  ADCSRA |= bit (ADPS0) | bit (ADPS1) | bit (ADPS2);  //set prescaler 128
+  ADCSRA |= B0001000;     //Enable ADC interrupt
 
   sei();      //set global interrupts flag
 
@@ -169,18 +169,15 @@ void adcInterruptSetup(void) {
 
 void txISRFunction(void) {
     if ((ADMUX & 0x07) == 0x00 ) {
-    AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+    *pADC[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
     ADMUX |= adcPinY;
   }
   else if ((ADMUX & 0x07) == 0x01) {
-    AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+    *pADC[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
     ADMUX |= adcPinS;
   }
   else {
-    AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+    *pADC[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
     ADMUX |= adcPinX;
     ToTxFlag = true;
   }
