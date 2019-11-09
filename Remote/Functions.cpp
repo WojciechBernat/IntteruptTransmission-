@@ -12,10 +12,60 @@ uint8_t adcPinS = 2;
 
 bool ToTxFlag = false;
 bool *pToTxFlag = &ToTxFlag;
-uint16_t volatile AdcVal[3] = {0, 0 , 0};
-uint16_t volatile *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
+volatile uint16_t AdcVal[3] = {0, 0 , 0};
+volatile uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
 
+void txISRFunction(void) {
+    delay(100);
+    Serial.println("\n ADCl | ADCH: " + String(ADCL | (ADCH << 8)));
+    AdcVal[0] = ((ADCL | (ADCH << 8))) ;
+    Serial.println("\n ADC Val [0]: " + String(AdcVal[0]));
+    Serial.println("\n pADC " + String(*pADC[0]));
+//    if ((ADMUX & 0x07) == 0x00 ) {
+//    AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
+//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+//    ADMUX |= adcPinY;
+//  }
+//  else if ((ADMUX & 0x07) == 0x01) {
+//    AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
+//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+//    ADMUX |= adcPinS;
+//  }
+//  else {
+//    AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
+//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+//    ADMUX |= adcPinX;
+//    ToTxFlag = true;
+//  }
+}
+
+void adcInterruptSetup(void) {
+  //All bit from 7 to 0
+  //REFS1 REFS0 ADLAR [reserved] MUX3 MUX2 MUX1 MUX0
+  //REFSx set reference voltage - 00 - AREF, 01 - AVCC, 11 - internal 2.56V or 1.1V
+  //ADLAR adjuste for 10bit or 8bits
+  ADMUX &= B11011111; //reset bits without 4th bit - it's reserved
+  ADMUX |= B01000000; //set reference voltage - AVcc;
+  ADMUX &= B11000000; //reset MUX bits also reset ADLAR bit - it should be 0 
+  ADMUX |= B00000001; //set ADC Channel - 1  (from  0)
+
+  //ADEN ADSC ADATE ADIF ADIE ADPS2 ADPS1 ADPS0
+  ADCSRA |= B00000111 ; //set set prescaler division factor - 128
+  ADCSRA |= B00001000;  //set ADC interrupt enable bit - if '1' interrupt enable
+  ADCSRA |= B00100000;  //set auto-triggering enable - source of trigger is setting in ADCSRB 
+
+  // [reserved] ACME [reserved] [reserved] [reserved] ADTS2 ADTS1 ADTS0
+  ADCSRB &= B00000000;  //reset ADCSRB also set ADC auto trigger source - 000 on MSBs
+  sei();                  //set global interrupt enable - turn on interrupts
+  ADCSRA |= B10000000;   //ADC enable
+  ADCSRA |= B01000000;   //ADC start conversion
+}
+
+
+ISR(ADC_vect) {
+  txISRFunction();
+}
 
 struct defaultUartSettings {
   bool speedFlag;
@@ -148,47 +198,6 @@ void printBufferReset(uint8_t *buf, uint8_t bufSize, String bufName) {
 }
 
 
-void adcInterruptSetup(void) {
-  ADMUX &= B11011111;     //ADMUX reset
-  ADMUX |= B11000000;     //Vref choose
-  ADMUX &= B11110000;     //Reset lower bits
-  ADMUX |= 8;       //Set ADC MUX channel - CH0
-    
-  ADCSRA |= B10000000;    //ADC enable
-  ADCSRA |= bit (ADPS0) | bit (ADPS1) | bit (ADPS2);  //set prescaler 128 
-  ADCSRA |= B00100000;    //Enable auto triggering of ADC
-  
-  ADCSRB &= B11111000;    //Set free running mode
-
-  ADCSRA |= B00001000;     //Enable ADC interrupt
-
-  sei();      //set global interrupts flag
-
-  ADCSRA |= B01000000; //start conversion
-}
-
-void txISRFunction(void) {
-    if ((ADMUX & 0x07) == 0x00 ) {
-    AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-    ADMUX |= adcPinY;
-  }
-  else if ((ADMUX & 0x07) == 0x01) {
-    AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-    ADMUX |= adcPinS;
-  }
-  else {
-    AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
-    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-    ADMUX |= adcPinX;
-    ToTxFlag = true;
-  }
-}
-
-ISR(ADC_vect) {
-  txISRFunction();
-}
 
 
 //struct nRF24Settings {
