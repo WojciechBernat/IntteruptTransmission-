@@ -6,9 +6,9 @@
 
 #define BUFFER_SIZE 4
 
-uint8_t adcPinX = 0;
-uint8_t adcPinY = 1;
-uint8_t adcPinS = 2;
+uint8_t adcPinX = 0x00;
+uint8_t adcPinY = 0x01;
+uint8_t adcPinS = 0x02;
 
 bool ToTxFlag = false;
 bool *pToTxFlag = &ToTxFlag;
@@ -17,27 +17,56 @@ volatile uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
 
 void txISRFunction(void) {
-    delay(100);
-    Serial.println("\n ADCl | ADCH: " + String(ADCL | (ADCH << 8)));
-    AdcVal[0] = ((ADCL | (ADCH << 8))) ;
-    Serial.println("\n ADC Val [0]: " + String(AdcVal[0]));
-    Serial.println("\n pADC " + String(*pADC[0]));
-//    if ((ADMUX & 0x07) == 0x00 ) {
-//    AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
-//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-//    ADMUX |= adcPinY;
-//  }
-//  else if ((ADMUX & 0x07) == 0x01) {
-//    AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
-//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-//    ADMUX |= adcPinS;
-//  }
-//  else {
-//    AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
-//    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-//    ADMUX |= adcPinX;
-//    ToTxFlag = true;
-//  }
+  if ((ADMUX & 0x07) == 0x00 ) {
+    AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
+/*    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
+/* To Debug 
+    Serial.println("\n ADMUX reg: ");
+    Serial.print(ADMUX, BIN);
+    Serial.println("\n ADCSRA reg: ");
+    Serial.print(ADCSRA, BIN); /*
+*/   
+    //Change channel
+    ADCSRA &= B00101111;   //ADC disenable and stop conversion
+    ADMUX  &= B11110000;   //reset channel bits
+    ADMUX  |= adcPinY;     //Changed ADC channel
+//    delayMicroseconds(100);
+    ADCSRA |= B11000000;   //ADC enable
+  }
+  else if ((ADMUX & 0x07) == 0x01) {
+    AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
+/*    Serial.println("\nAdcVal[1] data: " + String(ADCL | (ADCH << 8)));
+/* To Debug
+    Serial.println("\n ADMUX reg: ");
+    Serial.print(ADMUX, BIN);
+    Serial.println("\n ADCSRA reg: ");
+    Serial.print(ADCSRA, BIN);
+*/    
+    //Change channel
+    ADCSRA &= B00101111;   //ADC disenable and stop conversion
+    ADMUX  &= B11110000;   //reset channel bits
+    ADMUX  |= adcPinS;     //Changed ADC channel
+//    delayMicroseconds(100);
+    ADCSRA |= B11000000;   //ADC enable
+  }
+  else {
+    AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
+/*    Serial.println("\nAdcVal[2] data: " + String(ADCL | (ADCH << 8)));
+/* To Debug 
+    Serial.println("\n ADMUX reg: ");
+    Serial.print(ADMUX, BIN);
+    Serial.println("\n ADCSRA reg: ");
+    Serial.print(ADCSRA, BIN); /*
+*/    
+    //Change channel
+    ADCSRA &= B00101111;   //ADC disenable and stop conversion
+    ADMUX  &= B11110000;   //reset channel bits
+    ADMUX  |= adcPinX;     //Changed ADC channel  - bitwise AND to reset to LSBs
+//    delayMicroseconds(100);
+    ADCSRA |= B11000000;   //ADC enable
+
+    ToTxFlag = true;
+  }
 }
 
 void adcInterruptSetup(void) {
@@ -47,13 +76,13 @@ void adcInterruptSetup(void) {
   //ADLAR adjuste for 10bit or 8bits
   ADMUX &= B11011111; //reset bits without 4th bit - it's reserved
   ADMUX |= B01000000; //set reference voltage - AVcc;
-  ADMUX &= B11000000; //reset MUX bits also reset ADLAR bit - it should be 0 
-  ADMUX |= B00000001; //set ADC Channel - 1  (from  0)
+  ADMUX &= B11000000; //reset MUX bits also reset ADLAR bit - it should be 0
+  ADMUX |= B00000000; //set ADC Channel - 0  (from  0)
 
   //ADEN ADSC ADATE ADIF ADIE ADPS2 ADPS1 ADPS0
   ADCSRA |= B00000111 ; //set set prescaler division factor - 128
   ADCSRA |= B00001000;  //set ADC interrupt enable bit - if '1' interrupt enable
-  ADCSRA |= B00100000;  //set auto-triggering enable - source of trigger is setting in ADCSRB 
+  ADCSRA |= B00100000;  //set auto-triggering enable - source of trigger is setting in ADCSRB
 
   // [reserved] ACME [reserved] [reserved] [reserved] ADTS2 ADTS1 ADTS0
   ADCSRB &= B00000000;  //reset ADCSRB also set ADC auto trigger source - 000 on MSBs

@@ -44,24 +44,9 @@ void setup() {
   printBufferReset(TxBuffer, sizeof(TxBuffer), rxName);
 
   /* ADC intterput init */
-//  ADMUX &= B11011111;
-//
-//  ADMUX |= B11000000;
-//
-//  ADMUX &= B11110000;
-//
-//  ADMUX |= 8;
-//  ADCSRA |= bit (ADPS0) | bit (ADPS1) | bit (ADPS2);
-//  ADCSRA |= B00100000;
-//  ADCSRB &= B11111000;
-//  ADCSRA |= B00000111;
-//  ADCSRA |= B00001000;
-//  sei();
-//  ADCSRA |=B01000000;
-  
  adcInterruptSetup();
 
-  Remote.stopListening();   //TX
+ Remote.stopListening();   //TX
 }
 
 void loop() {
@@ -71,10 +56,17 @@ void loop() {
     ToTxFlag = false;
   }
   else {
-    delay(1000);
-
+    if (Remote.isAckPayloadAvailable()) {
+      Remote.read(RxBuffer, RX_ACK_PAYLOAD_SIZE);
+      Serial.print("\n Received ACK payload: ");
+      Serial.print(String(RxBuffer[0]) + "\t" + String(RxBuffer[1]) + "\t" + String(RxBuffer[2]) + "\n");
+    }
+    
+/* To Debug only    
+    delay(1000);  
     Serial.println("\nTX Buffer[0] data: " + String(TxBuffer[0]));
-//    Serial.println("\nTX Buffer[1] data: " + String(TxBuffer[1]));
-//    Serial.println("\nTX Buffer[2] data: " + String(TxBuffer[2]));
+    Serial.println("\nTX Buffer[1] data: " + String(TxBuffer[1]));
+    Serial.println("\nTX Buffer[2] data: " + String(TxBuffer[2]));
+    */
   }
 }
