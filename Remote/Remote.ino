@@ -62,11 +62,11 @@ void loop() {
       Serial.print(String(RxBuffer[0]) + "\t" + String(RxBuffer[1]) + "\t" + String(RxBuffer[2]) + "\n");
     }
     
-/* To Debug only    
+// To Debug only    
     delay(1000);  
     Serial.println("\nTX Buffer[0] data: " + String(TxBuffer[0]));
     Serial.println("\nTX Buffer[1] data: " + String(TxBuffer[1]));
     Serial.println("\nTX Buffer[2] data: " + String(TxBuffer[2]));
-    */
+
   }
 }

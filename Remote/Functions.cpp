@@ -10,63 +10,74 @@ uint8_t adcPinX = 0x00;
 uint8_t adcPinY = 0x01;
 uint8_t adcPinS = 0x02;
 
+uint8_t tempChannel = 0x08;
+
 bool ToTxFlag = false;
 bool *pToTxFlag = &ToTxFlag;
 volatile uint16_t AdcVal[3] = {0, 0 , 0};
 volatile uint16_t *pADC[3] = {&AdcVal[0], &AdcVal[1], &AdcVal[2] };
 
 
+void setAdcChannel(uint8_t AdcChannel) {
+  if (AdcChannel >= 0 || AdcChannel <= 8 ) {
+    ADCSRA &= B00101111;   //ADC disenable and stop conversion
+    ADMUX  &= B11110000;   //reset channel bits
+    ADMUX  |= AdcChannel;     //Changed ADC channel
+  }
+  else {
+    ADCSRA &= B00101111;   //ADC disenable and stop conversion
+    ADMUX  &= B11110000;   //reset channel bits
+    ADMUX  |= tempChannel;     //Changed ADC channel
+  }
+  ADCSRA |= B11000000;   //ADC enable
+}
+
 void txISRFunction(void) {
   if ((ADMUX & 0x07) == 0x00 ) {
     AdcVal[0] = ADCL | (ADCH << 8);    //ADC measure on first channel
-/*    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8)));
-/* To Debug 
-    Serial.println("\n ADMUX reg: ");
-    Serial.print(ADMUX, BIN);
-    Serial.println("\n ADCSRA reg: ");
-    Serial.print(ADCSRA, BIN); /*
-*/   
+    /*    Serial.println("\nAdcVal[0] data: " + String(ADCL | (ADCH << 8))); */
+    /* To Debug
+        Serial.println("\n ADMUX reg: ");
+        Serial.print(ADMUX, BIN);
+        Serial.println("\n ADCSRA reg: ");
+        Serial.print(ADCSRA, BIN);
+        //    delayMicroseconds(100);
+    */
     //Change channel
-    ADCSRA &= B00101111;   //ADC disenable and stop conversion
-    ADMUX  &= B11110000;   //reset channel bits
-    ADMUX  |= adcPinY;     //Changed ADC channel
-//    delayMicroseconds(100);
-    ADCSRA |= B11000000;   //ADC enable
+    setAdcChannel(adcPinY);
   }
   else if ((ADMUX & 0x07) == 0x01) {
     AdcVal[1] = ADCL | (ADCH << 8);    //ADC measure on first channel
-/*    Serial.println("\nAdcVal[1] data: " + String(ADCL | (ADCH << 8)));
-/* To Debug
-    Serial.println("\n ADMUX reg: ");
-    Serial.print(ADMUX, BIN);
-    Serial.println("\n ADCSRA reg: ");
-    Serial.print(ADCSRA, BIN);
-*/    
+    /*    Serial.println("\nAdcVal[1] data: " + String(ADCL | (ADCH << 8))); */
+    /* To Debug
+        Serial.println("\n ADMUX reg: ");
+        Serial.print(ADMUX, BIN);
+        Serial.println("\n ADCSRA reg: ");
+        Serial.print(ADCSRA, BIN);
+        //    delayMicroseconds(100);
+    */
     //Change channel
-    ADCSRA &= B00101111;   //ADC disenable and stop conversion
-    ADMUX  &= B11110000;   //reset channel bits
-    ADMUX  |= adcPinS;     //Changed ADC channel
-//    delayMicroseconds(100);
-    ADCSRA |= B11000000;   //ADC enable
+    setAdcChannel(adcPinS);
   }
   else {
     AdcVal[2] = ADCL | (ADCH << 8);    //ADC measure on first channel
-/*    Serial.println("\nAdcVal[2] data: " + String(ADCL | (ADCH << 8)));
-/* To Debug 
-    Serial.println("\n ADMUX reg: ");
-    Serial.print(ADMUX, BIN);
-    Serial.println("\n ADCSRA reg: ");
-    Serial.print(ADCSRA, BIN); /*
-*/    
+    /*    Serial.println("\nAdcVal[2] data: " + String(ADCL | (ADCH << 8))); */
+    /* To Debug
+        Serial.println("\n ADMUX reg: ");
+        Serial.print(ADMUX, BIN);
+        Serial.println("\n ADCSRA reg: ");
+        Serial.print(ADCSRA, BIN);
+        //    delayMicroseconds(100);
+    */
     //Change channel
-    ADCSRA &= B00101111;   //ADC disenable and stop conversion
-    ADMUX  &= B11110000;   //reset channel bits
-    ADMUX  |= adcPinX;     //Changed ADC channel  - bitwise AND to reset to LSBs
-//    delayMicroseconds(100);
-    ADCSRA |= B11000000;   //ADC enable
+    setAdcChannel(adcPinX);
 
     ToTxFlag = true;
   }
+}
+
+ISR(ADC_vect) {
+  txISRFunction();
 }
 
 void adcInterruptSetup(void) {
@@ -92,9 +103,6 @@ void adcInterruptSetup(void) {
 }
 
 
-ISR(ADC_vect) {
-  txISRFunction();
-}
 
 struct defaultUartSettings {
   bool speedFlag;
@@ -132,7 +140,7 @@ void uartInit(uint32_t Speed, uint8_t Format) {
 
 uint32_t uartSpeedCheck(uint32_t Speed, struct defaultUartSettings *ptr) {
   switch (Speed) {
-    case 2500:
+    case 2400:
       ptr -> speedFlag = true;
       return Speed;
       break;
@@ -202,6 +210,8 @@ uint8_t uartFormatCheck(uint8_t Format, struct defaultUartSettings *ptr) {
     }
   }
 }
+
+
 
 void bufferCopyMap(volatile uint16_t *source, uint8_t *buf, uint8_t bufSize) {
   for (int i = 0; i < bufSize; i ++) {

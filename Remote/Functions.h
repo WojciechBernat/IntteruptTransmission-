@@ -52,3 +52,4 @@ void bufferCopyMap(volatile uint16_t *source, uint8_t *buf, uint8_t bufSize);
 
 void adcInterruptSetup(void);
 void txISRFunction(void);
+void setAdcChannel(uint8_t AdcChannel);
