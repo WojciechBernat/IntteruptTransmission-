@@ -47,7 +47,7 @@ void setup() {
   adcInterruptSetup();
 
   Slave.startListening();                                      //RX
-  Slave.writeAckPayload(0, TxBuffer, TX_ACK_PAYLOAD_SIZE );    //RX
+  Slave.writeAckPayload(ACKpipe, TxBuffer, TX_ACK_PAYLOAD_SIZE );    //RX
 }
 
 void loop() {
@@ -59,6 +59,8 @@ void loop() {
     }
   }
   else {
+    Slave.writeAckPayload( ACKpipe, TxBuffer, TX_ACK_PAYLOAD_SIZE );
+    Serial.print("\nTx Buffer[0] " + String(TxBuffer[0]));
     Serial.print("\nRx Buffer[0] " + String(RxBuffer[0]));
   }
 

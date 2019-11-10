@@ -26,6 +26,7 @@
 /* extern variables */
 extern volatile uint16_t AdcVal;
 extern volatile uint16_t *pAdcVal;
+extern uint8_t ACKpipe;
 
 extern String txName;
 extern String rxName;
@@ -49,3 +50,7 @@ void bufferCopyMap(uint16_t *source, uint8_t *buf, uint8_t bufSize);
 
 void adcInterruptSetup(void);
 void rxISRFunction(void);
+void tempMeasure(void);
+void setAdcChannel(uint8_t AdcChannel);
+
+uint8_t meanVal(uint8_t volatile *tab, uint8_t tabSize);
