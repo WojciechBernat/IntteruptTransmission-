@@ -21,3 +21,5 @@ uint8_t ACKpipe = 0;
 
 /* Create structere inst. */
 struct tempMeasure tempStruct;
+struct rfSettings RFpipe0;
+struct rfBuffers  BufPipe0;

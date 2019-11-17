@@ -2,10 +2,13 @@
 
 /* Libraries and include files */
 #include <Arduino.h>
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
 
 /* Directives and Macros */
+#define PIPE_ADDRESS_SIZE     5    //Size of pipeline address buffer
 #define BUFFER_SIZE           4    //Size of transmission buffers 
-#define PIPE_ADDRESS_SIZE     5    //Size of pipeline address array
 #define RECEIVE_DATA_SIZE     4    //Size of data which can be receive
 #define TX_ACK_PAYLOAD_SIZE   3    //Size of data send to TX while send ACK with payload
 
@@ -39,6 +42,24 @@ extern uint8_t ACKpipe;
 
 /* Definitions od structures */
 
+struct rfSettings {
+  rf24_pa_dbm_e Power;
+  rf24_datarate_e Datarate;
+  uint8_t RFchannel;
+  uint8_t RetriesDelay;
+  uint8_t RetriesCount;   
+  boolean AutoAckState; 
+  rf24_crclength_e CRClenght;
+
+  uint8_t TxAddr[5];
+  uint8_t RxAddr[8];
+};
+
+struct rfBuffers {
+  uint8_t TxBuf[TX_ACK_PAYLOAD_SIZE];
+  uint8_t RxBuf[RECEIVE_DATA_SIZE];
+};
+
 struct tempMeasure {
     uint8_t tempChannel;
     uint8_t volatile tempCounter;   
@@ -54,5 +75,9 @@ struct defaultUartSettings {
   uint8_t  uartFormatDef;
 };
 
+
+
 /* Extern create structures */
 extern tempMeasure tempStruct;
+extern struct rfSettings RFpipe0;
+extern struct rfBuffers  BufPipe0;

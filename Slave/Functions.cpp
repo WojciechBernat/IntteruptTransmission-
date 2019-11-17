@@ -34,12 +34,6 @@ void adcInterruptSetup(uint8_t Channel) {
   ADCSRA |= B01000000;   //ADC start conversion
 }
 
-void rxISRFunction()  {
-  tempMeasure(tempStruct.tempSens, tempStruct.tempCounter, tempStruct.tempMean);  //temperature measure
-  TxBuffer[0] = tempStruct.tempMean;
-}
-
-
 void tempMeasure(uint8_t volatile *tab, uint8_t volatile counter, uint8_t volatile meanTemp ) {
   tab[counter] = map((ADCL | (ADCH << 8)), 0, 1023, 0, 255);
   if (counter == 0x08) {
@@ -63,6 +57,11 @@ uint8_t meanVal(uint8_t volatile *tab, uint8_t tabSize) {
   else {
     return 0;
   }
+}
+
+void rxISRFunction()  {
+  tempMeasure(tempStruct.tempSens, tempStruct.tempCounter, tempStruct.tempMean);  //temperature measure
+  TxBuffer[0] = tempStruct.tempMean;
 }
 
 ISR(ADC_vect) {

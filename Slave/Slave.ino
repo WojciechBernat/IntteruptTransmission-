@@ -6,9 +6,7 @@
 
 /* Variables */
 
-
-
-
+/* Instances */
 RF24 Slave(CE_PIN, CSN_PIN);
 
 void setup() {
@@ -40,7 +38,7 @@ void setup() {
    tempStructDefSetup();
   adcInterruptSetup(tempStruct.tempChannel);
 
-  Slave.startListening();                                      //RX
+  Slave.startListening();                                            //RX
   Slave.writeAckPayload(ACKpipe, TxBuffer, TX_ACK_PAYLOAD_SIZE );    //RX
 }
 
