@@ -1,20 +1,13 @@
   /* Main file of progrma */
 
-/* Libraries */
+/* Libraries and include files */
 #include "Functions.h"
 #include <printf.h>   //Warning! Include to use printDetails()
 
 /* Variables */
-String txName = "TX Buffer";
-String rxName = "RX Buffer";
 
-/* Pipeline addresses */
-uint8_t TxAddresses[PIPE_ADDRESS_SIZE] = {0x0B, 0x0B, 0x0B, 0x0B, 0x02};  //TX pipeline address
-uint8_t RxAddresses[PIPE_ADDRESS_SIZE] = {0x0A, 0x0A, 0x0A, 0x0A, 0x01};  //RX pipeline address
 
-/* Transmission buffers */
-uint8_t TxBuffer[BUFFER_SIZE];
-uint8_t RxBuffer[BUFFER_SIZE];
+
 
 RF24 Slave(CE_PIN, CSN_PIN);
 
@@ -44,7 +37,8 @@ void setup() {
   printBufferReset(TxBuffer, sizeof(TxBuffer), rxName);
 
   /* ADC intterput init */
-  adcInterruptSetup();
+   tempStructDefSetup();
+  adcInterruptSetup(tempStruct.tempChannel);
 
   Slave.startListening();                                      //RX
   Slave.writeAckPayload(ACKpipe, TxBuffer, TX_ACK_PAYLOAD_SIZE );    //RX

@@ -1,21 +1,18 @@
 /* Functions bodies */
 
-/* Libraries */
+/* Libraries and include files */
 #include "Functions.h"
 
 
-uint8_t ACKpipe = 0x00;
-
-uint8_t tempChannel = 0x08;
-uint8_t adcPin = tempChannel;
-
-uint8_t volatile rxCounter = 0;
-uint8_t volatile temper = 0;
-uint8_t volatile tempSens[8];
-uint8_t volatile *pTempSens = tempSens;
+void tempStructDefSetup() {
+  tempStruct.tempChannel = TEMPERATURE_SENSOR_CHANNEL ; 
+  tempStruct.tempCounter = 0;
+  tempStruct.tempMean = 0;
+  //resetBuffer(tempStruct.tempSens, sizeof(tempStruct.tempSens));
+}
 
 
-void adcInterruptSetup(void) {
+void adcInterruptSetup(uint8_t Channel) {
   //All bit from 7 to 0
   //REFS1 REFS0 ADLAR [reserved] MUX3 MUX2 MUX1 MUX0
   //REFSx set reference voltage - 00 - AREF, 01 - AVCC, 11 - internal 2.56V or 1.1V
@@ -23,7 +20,7 @@ void adcInterruptSetup(void) {
   ADMUX &= B11011111; //reset bits without 4th bit - it's reserved
   ADMUX |= B01000000; //set reference voltage - AVcc;
   ADMUX &= B11000000; //reset MUX bits also reset ADLAR bit - it should be 0
-  ADMUX |= tempChannel; //set ADC Channel - 0  (from  0)
+  ADMUX |= Channel; //set ADC Channel - 0  (from  0)
 
   //ADEN ADSC ADATE ADIF ADIE ADPS2 ADPS1 ADPS0
   ADCSRA |= B00000111 ; //set set prescaler division factor - 128
@@ -38,25 +35,20 @@ void adcInterruptSetup(void) {
 }
 
 void rxISRFunction()  {
-  tempMeasure();  //temperature measure
-  TxBuffer[0] = temper;
+  tempMeasure(tempStruct.tempSens, tempStruct.tempCounter, tempStruct.tempMean);  //temperature measure
+  TxBuffer[0] = tempStruct.tempMean;
 }
 
 
-void tempMeasure(void) {
-  tempSens[rxCounter] = map((ADCL | (ADCH << 8)), 0, 1023, 0, 255);
-  if (rxCounter == 0x08) {
-    rxCounter = 0;
-    temper = meanVal(tempSens, sizeof(tempSens));
+void tempMeasure(uint8_t volatile *tab, uint8_t volatile counter, uint8_t volatile meanTemp ) {
+  tab[counter] = map((ADCL | (ADCH << 8)), 0, 1023, 0, 255);
+  if (counter == 0x08) {
+    counter = 0;
+    meanTemp = meanVal(tab, sizeof(tab));
   }
   else {
-    rxCounter++;
+    counter++;
   }
-}
-
-
-ISR(ADC_vect) {
-  rxISRFunction();
 }
 
 uint8_t meanVal(uint8_t volatile *tab, uint8_t tabSize) {
@@ -73,6 +65,10 @@ uint8_t meanVal(uint8_t volatile *tab, uint8_t tabSize) {
   }
 }
 
+ISR(ADC_vect) {
+  rxISRFunction();
+}
+
 void setAdcChannel(uint8_t AdcChannel) {
   if (AdcChannel >= 0 || AdcChannel <= 8 ) {
     ADCSRA &= B00101111;   //ADC disenable and stop conversion
@@ -82,22 +78,12 @@ void setAdcChannel(uint8_t AdcChannel) {
   else {
     ADCSRA &= B00101111;   //ADC disenable and stop conversion
     ADMUX  &= B11110000;   //reset channel bits
-    ADMUX  |= tempChannel;     //Changed ADC channel
+    ADMUX  |= TEMPERATURE_SENSOR_CHANNEL;     //Changed ADC channel
   }
   ADCSRA |= B11000000;   //ADC enable
 }
 
 
-
-
-
-
-struct defaultUartSettings {
-  bool speedFlag;
-  bool formatFlag;
-  uint32_t uartSpeedDef;
-  uint8_t  uartFormatDef;
-} ;
 
 void uartInit(uint32_t Speed, uint8_t Format) {
   struct defaultUartSettings defSet = {false, false, 115200, 38};
