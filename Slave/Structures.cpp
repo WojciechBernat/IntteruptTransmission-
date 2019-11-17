@@ -20,6 +20,8 @@ String rxName = "RX Buffer";
 uint8_t ACKpipe = 0;
 
 /* Create structere inst. */
-struct tempMeasure tempStruct;
-struct rfSettings RFpipe0;
-struct rfBuffers  BufPipe0;
+struct tempMeasure        tempStruct;
+struct rfSettings         RFpipe_0;
+struct rfTransmitSettings TrasnmitPipe_0;
+struct rfBuffers          BufPipe_0;
+struct rfAddr             AddrPipe_0;

@@ -11,6 +11,67 @@ void tempStructDefSetup() {
   //resetBuffer(tempStruct.tempSens, sizeof(tempStruct.tempSens));
 }
 
+boolean setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, uint8_t retVar, boolean AAckState, boolean AAckStateVar, rf24_crclength_e crc, rf24_crclength_e crcVar) {
+      if( retDelay >= 0x00 || retDelay <= 0x0F ) {
+        retDelayVar = retDelay;
+      } else {
+        retDelayVar = 0x0F; //reset value of nRF24 
+      }
+
+      if( ret >= 0x00 || ret <= 0x0F ) {
+        retVar = ret;
+      } else { 
+        retVar = 0x03; //reset value of nRF24
+      }
+
+      AAckStateVar = AAckState;
+
+      switch(crc) {
+        case RF24_CRC_DISABLED:
+        case RF24_CRC_8:
+        case RF24_CRC_16:
+          crcVar = crc;
+          break; 
+        default:
+          crcVar = RF24_CRC_8;
+          break;
+      }
+}
+
+boolean setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datarate_e dataRate, rf24_datarate_e dataRateVar, uint8_t channel, uint8_t channelVar ) {
+    switch(powerLevel) {
+      case RF24_PA_MIN:
+      case RF24_PA_LOW:
+      case RF24_PA_HIGH:
+      case RF24_PA_MAX:
+              powerVar = powerLevel;
+              break;
+      default:
+        powerVar = RF24_PA_MAX;
+        break;      
+    }
+
+    switch(dataRate) {
+      case RF24_250KBPS:
+      case RF24_1MBPS:
+      case RF24_2MBPS: 
+        dataRateVar = dataRate;
+        break;
+      default:
+        dataRateVar = RF24_250KBPS;
+        break;
+    }
+
+    if( channel >= 0 && channel <= 126) {
+      channelVar  = channel;
+    }
+    else {
+      channelVar = 0x02;
+    }
+  
+  
+}
+
 
 void adcInterruptSetup(uint8_t Channel) {
   //All bit from 7 to 0
@@ -114,37 +175,13 @@ void uartInit(uint32_t Speed, uint8_t Format) {
 uint32_t uartSpeedCheck(uint32_t Speed, struct defaultUartSettings *ptr) {
   switch (Speed) {
     case 2500:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 4800:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 9600:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 14400:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 19200:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 28800:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 38400:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 57600:
-      ptr -> speedFlag = true;
-      return Speed;
-      break;
     case 115200:
       ptr -> speedFlag = true;
       return Speed;

@@ -43,16 +43,21 @@ extern uint8_t ACKpipe;
 /* Definitions od structures */
 
 struct rfSettings {
-  rf24_pa_dbm_e Power;
+  rf24_pa_dbm_e   Power;
   rf24_datarate_e Datarate;
-  uint8_t RFchannel;
-  uint8_t RetriesDelay;
-  uint8_t RetriesCount;   
-  boolean AutoAckState; 
-  rf24_crclength_e CRClenght;
+  uint8_t         RFchannel;
+};
 
-  uint8_t TxAddr[5];
-  uint8_t RxAddr[8];
+struct rfTransmitSettings {
+  uint8_t           RetriesDelay;
+  uint8_t           RetriesCount;   
+  boolean           AutoAckState; 
+  rf24_crclength_e  CRClenght;
+};
+
+struct rfAddr {
+    uint8_t TxAddr[5];
+    uint8_t RxAddr[8];
 };
 
 struct rfBuffers {
@@ -78,6 +83,8 @@ struct defaultUartSettings {
 
 
 /* Extern create structures */
-extern tempMeasure tempStruct;
-extern struct rfSettings RFpipe0;
-extern struct rfBuffers  BufPipe0;
+extern tempMeasure        tempStruct;
+extern rfSettings         RFpipe_0;
+extern rfTransmitSettings TrasnmitPipe_0;
+extern rfBuffers          BufPipe_0;
+extern rfAddr            AddrPipe_0;
