@@ -42,12 +42,14 @@ extern uint8_t ACKpipe;
 
 /* Definitions od structures */
 
+/* RF settings structure */
 struct rfSettings {
   rf24_pa_dbm_e   Power;
   rf24_datarate_e Datarate;
   uint8_t         RFchannel;
 };
 
+/* RF transmission structure */
 struct rfTransmitSettings {
   uint8_t           RetriesDelay;
   uint8_t           RetriesCount;   
@@ -55,16 +57,19 @@ struct rfTransmitSettings {
   rf24_crclength_e  CRClenght;
 };
 
+/* Pipeline address structure */
 struct rfAddr {
     uint8_t TxAddr[5];
-    uint8_t RxAddr[8];
+    uint8_t RxAddr[5];
 };
 
+/* RF buffers structure */
 struct rfBuffers {
   uint8_t TxBuf[TX_ACK_PAYLOAD_SIZE];
   uint8_t RxBuf[RECEIVE_DATA_SIZE];
 };
 
+/* Temperature measure structure */
 struct tempMeasure {
     uint8_t tempChannel;
     uint8_t volatile tempCounter;   
@@ -72,7 +77,7 @@ struct tempMeasure {
     uint8_t volatile tempSens[8];
 };
 
-
+/* UART settings structure */
 struct defaultUartSettings {
   bool speedFlag;
   bool formatFlag;
@@ -84,6 +89,7 @@ struct defaultUartSettings {
 
 /* Extern create structures */
 extern tempMeasure        tempStruct;
+
 extern rfSettings         RFpipe_0;
 extern rfTransmitSettings TrasnmitPipe_0;
 extern rfBuffers          BufPipe_0;

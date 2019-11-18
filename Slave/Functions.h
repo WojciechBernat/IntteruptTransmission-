@@ -29,5 +29,5 @@ void tempStructDefSetup();
 
 
 /* Functions to handling RF structure */
-boolean setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, uint8_t retVar, boolean AAckState, boolean AAckStateVar, rf24_crclength_e crc, rf24_crclength_e crcVar);
-boolean setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datarate_e dataRate, rf24_datarate_e dataRateVar, uint8_t channel, uint8_t channelVar );
+void setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, uint8_t retVar, boolean AAckState, boolean AAckStateVar, rf24_crclength_e crc, rf24_crclength_e crcVar);
+void setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datarate_e dataRate, rf24_datarate_e dataRateVar, uint8_t channel, uint8_t channelVar );

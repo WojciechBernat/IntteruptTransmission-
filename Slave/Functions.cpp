@@ -11,7 +11,7 @@ void tempStructDefSetup() {
   //resetBuffer(tempStruct.tempSens, sizeof(tempStruct.tempSens));
 }
 
-boolean setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, uint8_t retVar, boolean AAckState, boolean AAckStateVar, rf24_crclength_e crc, rf24_crclength_e crcVar) {
+void setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, uint8_t retVar, boolean AAckState, boolean AAckStateVar, rf24_crclength_e crc, rf24_crclength_e crcVar) {
       if( retDelay >= 0x00 || retDelay <= 0x0F ) {
         retDelayVar = retDelay;
       } else {
@@ -38,7 +38,7 @@ boolean setTransmitStruct(uint8_t retDelay, uint8_t retDelayVar, uint8_t ret, ui
       }
 }
 
-boolean setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datarate_e dataRate, rf24_datarate_e dataRateVar, uint8_t channel, uint8_t channelVar ) {
+void setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datarate_e dataRate, rf24_datarate_e dataRateVar, uint8_t channel, uint8_t channelVar ) {
     switch(powerLevel) {
       case RF24_PA_MIN:
       case RF24_PA_LOW:
@@ -72,6 +72,10 @@ boolean setRFStruct(rf24_pa_dbm_e powerLevel, rf24_pa_dbm_e powerVar, rf24_datar
   
 }
 
+//boolean setRFAddr(uint8_t rxSource[], uint8_t rxAddrVar[], uint8_t txSource[], uint8_t txAddrVar[] ) {
+//  rxSize = sizeof(rxSource);
+//  txSize = sizeof(txSource);
+//}
 
 void adcInterruptSetup(uint8_t Channel) {
   //All bit from 7 to 0
@@ -97,7 +101,7 @@ void adcInterruptSetup(uint8_t Channel) {
 
 void tempMeasure(uint8_t volatile *tab, uint8_t volatile counter, uint8_t volatile meanTemp ) {
   tab[counter] = map((ADCL | (ADCH << 8)), 0, 1023, 0, 255);
-  if (counter == 0x08) {
+  if (counter == 0x07) {
     counter = 0;
     meanTemp = meanVal(tab, sizeof(tab));
   }
@@ -128,6 +132,7 @@ void rxISRFunction()  {
 ISR(ADC_vect) {
   rxISRFunction();
 }
+
 
 void setAdcChannel(uint8_t AdcChannel) {
   if (AdcChannel >= 0 || AdcChannel <= 8 ) {
