@@ -35,7 +35,7 @@ void setup() {
   printBufferReset(TxBuffer, sizeof(TxBuffer), rxName);
 
   /* ADC intterput init */
-   tempStructDefSetup();
+  tempStructDefSetup();
   adcInterruptSetup(tempStruct.tempChannel);
 
   Slave.startListening();                                            //RX

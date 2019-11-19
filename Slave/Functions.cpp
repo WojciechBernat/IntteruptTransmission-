@@ -126,7 +126,10 @@ uint8_t meanVal(uint8_t volatile *tab, uint8_t tabSize) {
 
 void rxISRFunction()  {
   tempMeasure(tempStruct.tempSens, tempStruct.tempCounter, tempStruct.tempMean);  //temperature measure
-  TxBuffer[0] = tempStruct.tempMean;
+  if(tempStruct.tempCounter == 0) {
+    TxBuffer[0] = tempStruct.tempMean;
+  }
+  
 }
 
 ISR(ADC_vect) {
